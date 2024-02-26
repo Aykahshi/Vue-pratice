@@ -8,16 +8,17 @@
       <label class="select">
         請選擇地區
         <select class="normal-select" v-model="selectedCity">
+          f
           <option :value="null" disabled selected>選擇縣市</option>
-          <option v-for="location in locations" :value="location.locationName">
-            {{ location.locationName }}
+          <option v-for="i in locations" :value="i">
+            {{ i }}
           </option>
         </select>
         <!-- 移動端下拉選單 -->
         <select class="mobile-select" v-model="selectedCity" @change="comfirm">
           <option :value="null" disabled selected>選擇縣市</option>
-          <option v-for="location in locations" :value="location.locationName">
-            {{ location.locationName }}
+          <option v-for="i in locations" :value="i">
+            {{ i }}
           </option>
         </select>
       </label>
@@ -45,10 +46,14 @@
     </div>
     <div class="main">
       <div class="weather" v-for="(data, index) in wxData" :key="index">
-        <span>{{ startTime }}</span>
+        <span>
+          {{ moment(new Date(data.startTime)).format("MM/DD HH:mm") }}
+        </span>
         <span>~</span>
-        <span>{{ endTime }}</span>
-        <span>{{ data }}</span>
+        <span>
+          {{ moment(new Date(data.endTime)).format("MM/DD HH:mm") }}
+        </span>
+        <span>{{ data.parameter.parameterName }} </span>
         <img class="wImg" :src="wImg[index]" arc="" />
       </div>
     </div>
@@ -57,86 +62,41 @@
 
 <script setup>
 // 透過axios進行API串接並獲取所需的資料;
+import moment from "moment";
 import axios from "axios";
+
 import $http from "@/API/http";
 import $google from "@/API/google";
+
 import Imgrain from "@/assets/img/rain.png";
 import Imgcloud from "@/assets/img/cloudy.png";
 import Imgsun from "@/assets/img/sun.png";
 import Imgsc from "@/assets/img/sun-cloud.png";
 import Imgmc from "@/assets/img/more-cloud.png";
 import Imgstorm from "@/assets/img/storm.png";
+
 const wxData = ref([]);
 const rainchance = ref("0");
 const temperature = ref("0");
 const city = ref("當前");
 const selectedCity = ref(null); //默認選擇為null
-const locations = ref([]); //賦值給locations一個空的陣列
+const locations = ref([]);
 const wImg = ref(["", "", ""]);
 const date = ref("2000-01-01");
 const time = ref("00:00:00");
-const startTime = ref();
-const endTime = ref();
 
 //獲取當前時間與日期
 const getTime = () => {
   let now = new Date();
-
-  let year = now.getFullYear();
-  let month = now.getMonth() + 1;
-  let day = now.getDate();
-
-  let hours = now.getHours();
-  let minutes = now.getMinutes();
-  let seconds = now.getSeconds();
-
-  // 補零
-  month = month < 10 ? "0" + month : month;
-  day = day < 10 ? "0" + day : day;
-  hours = hours < 10 ? "0" + hours : hours;
-  minutes = minutes < 10 ? "0" + minutes : minutes;
-  seconds = seconds < 10 ? "0" + seconds : seconds;
-
-  date.value = year + "-" + month + "-" + day;
-  time.value = hours + ":" + minutes + ":" + seconds;
+  date.value = moment(now).format("YYYY/MM/DD");
+  time.value = moment(now).format("HH:mm:ss");
 };
 setInterval(getTime, 1000);
 
 //按下確認按鈕時取得當前選擇縣市資料，並同時改變氣象預報前的地區名稱
 const comfirm = () => {
   if (selectedCity.value) {
-    $http
-      .get("/api/v1/rest/datastore/F-C0032-001", {
-        params: {
-          locationName: selectedCity.value,
-        },
-      })
-      .then((rs2) => {
-        //獲取起訖時間
-        startTime.value =
-          rs2.data.records.location[0].weatherElement[0].time[0].startTime.slice(
-            5
-          );
-        endTime.value =
-          rs2.data.records.location[0].weatherElement[0].time[0].endTime.slice(
-            5
-          );
-        //獲取降雨機率
-        rainchance.value =
-          rs2.data.records.location[0].weatherElement[1].time[0].parameter.parameterName;
-        //獲取氣溫資訊
-        temperature.value =
-          rs2.data.records.location[0].weatherElement[2].time[0].parameter.parameterName;
-        //獲取資料中的三筆天氣資訊
-        for (let i = 0; i < 3; i++) {
-          wxData.value[i] =
-            rs2.data.records.location[0].weatherElement[0].time[
-              i
-            ].parameter.parameterName;
-        }
-        weatherUpdate();
-      });
-    city.value = selectedCity.value;
+    getWeatherData(selectedCity.value);
   }
 };
 
@@ -157,42 +117,10 @@ const getPosition = () => {
         .then((response) => {
           const results = response.data.results;
           if (results[0]) {
-            const address = results[8].formatted_address;
-            let parts = address.split("台灣");
-            const locationName = parts[1]; // 從地址中提取出縣市資訊
-            // 使用縣市資訊來發送 API 請求
-            $http
-              .get("/api/v1/rest/datastore/F-C0032-001", {
-                params: {
-                  locationName: locationName.value,
-                },
-              })
-              .then((rs3) => {
-                //獲取起訖時間
-                startTime.value =
-                  rs3.data.records.location[0].weatherElement[0].time[0].startTime.slice(
-                    5
-                  );
-                endTime.value =
-                  rs3.data.records.location[0].weatherElement[0].time[0].endTime.slice(
-                    5
-                  );
-                //獲取降雨機率
-                rainchance.value =
-                  rs3.data.records.location[0].weatherElement[1].time[0].parameter.parameterName;
-                //獲取氣溫資訊
-                temperature.value =
-                  rs3.data.records.location[0].weatherElement[2].time[0].parameter.parameterName;
-                //獲取資料中的三筆天氣資訊
-                for (let i = 0; i < 3; i++) {
-                  wxData.value[i] =
-                    rs3.data.records.location[0].weatherElement[0].time[
-                      i
-                    ].parameter.parameterName;
-                }
-                city.value = locationName;
-                weatherUpdate();
-              });
+            const locationName =
+              results[results.length - 2].address_components[0].long_name; // 從地址中提取出縣市資訊
+
+            getWeatherData(locationName);
           }
         });
     });
@@ -202,27 +130,25 @@ const getPosition = () => {
 //圖片變更事件
 const weatherUpdate = () => {
   for (let i = 0; i < 3; i++) {
-    console.log(wxData.value[i]);
-    if (wxData.value[i] !== undefined) {
+    const data = wxData.value[i].parameter.parameterName;
+    if (data !== undefined) {
       switch (true) {
-        case wxData.value[i].includes("短暫雨"):
+        case data.includes("短暫雨"):
           wImg.value[i] = Imgrain;
           break;
-        case wxData.value[i].includes("陰天"):
+        case data.includes("陰天"):
           wImg.value[i] = Imgcloud;
           break;
-        case wxData.value[i].includes("晴") &&
-          !wxData.value[i].includes("多雲"):
+        case data.includes("晴") && !data.includes("多雲"):
           wImg.value[i] = Imgsun;
           break;
-        case wxData.value[i].includes("晴") && wxData.value[i].includes("多雲"):
+        case data.includes("晴") && data.includes("多雲"):
           wImg.value[i] = Imgsc;
           break;
-        case wxData.value[i].includes("多雲") &&
-          !wxData.value[i].includes("晴"):
+        case data.includes("多雲") && !data.includes("晴"):
           wImg.value[i] = Imgmc;
           break;
-        case wxData.value[i].includes("豪大雨"):
+        case data.includes("豪大雨"):
           wImg.value[i] = Imgstorm;
           break;
         default:
@@ -238,24 +164,41 @@ const reset = () => {
   getPosition();
 };
 
-onMounted(async () => {
-  await axios
-    .get("https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001", {
+function getWeatherData(local) {
+  $http
+    .get("/api/v1/rest/datastore/F-C0032-001", {
       params: {
-        Authorization: "CWA-2977C9FC-E45A-47BA-A5EA-966C0BE1136C",
-        locationName: "",
+        locationName: local,
       },
     })
-    .then((rs1) => {
-      console.clear();
-      // 取得API數據並賦予locations陣列
-      locations.value = rs1.data.records.location;
-      console.log(locations);
-    })
+    .then((rs3) => {
+      //獲取降雨機率
+      rainchance.value =
+        rs3.data.records.location[0].weatherElement[1].time[0].parameter.parameterName;
+      //獲取氣溫資訊
+      temperature.value =
+        rs3.data.records.location[0].weatherElement[2].time[0].parameter.parameterName;
+      //獲取資料中的三筆天氣資訊
 
-    .catch((error) => {
-      console.log(error);
+      for (let i = 0; i < 3; i++) {
+        wxData.value[i] =
+          rs3.data.records.location[0].weatherElement[0].time[i];
+      }
+
+      city.value = local;
+      weatherUpdate();
     });
+}
+
+onMounted(async () => {
+  await axios
+    .post("https://openapi.land.moi.gov.tw/WEBAPI/LandQuery/QueryCity", [
+      { CITY: null },
+    ])
+    .then((res) => {
+      locations.value = res.data.RESPONSE.map((e) => e.NAME);
+    });
+
   getTime();
   getPosition();
 });
