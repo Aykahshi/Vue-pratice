@@ -1,13 +1,20 @@
 <template>
   <header>
-    <img class="logo" src="/src/assets/img/weather.png" alt="氣象查詢" />
+    <img class="logo" src="@/assets/img/weather.png" alt="氣象查詢" />
     <h1 class="title">36小時區域氣象</h1>
   </header>
   <section>
     <div class="selecter">
       <label class="select">
         請選擇地區
-        <select v-model="selectedCity">
+        <select class="normal-select" v-model="selectedCity">
+          <option :value="null" disabled selected>選擇縣市</option>
+          <option v-for="location in locations" :value="location.locationName">
+            {{ location.locationName }}
+          </option>
+        </select>
+        <!-- 移動端下拉選單 -->
+        <select class="mobile-select" v-model="selectedCity" @change="comfirm">
           <option :value="null" disabled selected>選擇縣市</option>
           <option v-for="location in locations" :value="location.locationName">
             {{ location.locationName }}
@@ -16,6 +23,9 @@
       </label>
       <button class="yes" @click="comfirm">確認縣市</button>
       <button class="reset" @click="reset">重置</button>
+    </div>
+    <div class="mobile-btn">
+      <button class="reset-mobile" @click="reset">重置</button>
     </div>
     <div class="present">
       <div class="contentL">
@@ -28,7 +38,10 @@
         <span class="date">{{ date }}</span>
         <span class="time">{{ time }}</span>
       </div>
-      <img class="wImg" :src="wImg[0]" arc="" />
+      <div class="imgandtp">
+        <img class="wImg" :src="wImg[0]" arc="" />
+        <div class="tp2">{{ temperature }}°C</div>
+      </div>
     </div>
     <div class="main">
       <div class="weather" v-for="(data, index) in wxData" :key="index">
@@ -47,6 +60,12 @@
 import axios from "axios";
 import $http from "@/API/http";
 import $google from "@/API/google";
+import Imgrain from "@/assets/img/rain.png";
+import Imgcloud from "@/assets/img/cloudy.png";
+import Imgsun from "@/assets/img/sun.png";
+import Imgsc from "@/assets/img/sun-cloud.png";
+import Imgmc from "@/assets/img/more-cloud.png";
+import Imgstorm from "@/assets/img/storm.png";
 const wxData = ref([]);
 const rainchance = ref("0");
 const temperature = ref("0");
@@ -95,9 +114,13 @@ const comfirm = () => {
       .then((rs2) => {
         //獲取起訖時間
         startTime.value =
-          rs2.data.records.location[0].weatherElement[0].time[0].startTime;
+          rs2.data.records.location[0].weatherElement[0].time[0].startTime.slice(
+            5
+          );
         endTime.value =
-          rs2.data.records.location[0].weatherElement[0].time[0].endTime;
+          rs2.data.records.location[0].weatherElement[0].time[0].endTime.slice(
+            5
+          );
         //獲取降雨機率
         rainchance.value =
           rs2.data.records.location[0].weatherElement[1].time[0].parameter.parameterName;
@@ -147,9 +170,13 @@ const getPosition = () => {
               .then((rs3) => {
                 //獲取起訖時間
                 startTime.value =
-                  rs3.data.records.location[0].weatherElement[0].time[0].startTime;
+                  rs3.data.records.location[0].weatherElement[0].time[0].startTime.slice(
+                    5
+                  );
                 endTime.value =
-                  rs3.data.records.location[0].weatherElement[0].time[0].endTime;
+                  rs3.data.records.location[0].weatherElement[0].time[0].endTime.slice(
+                    5
+                  );
                 //獲取降雨機率
                 rainchance.value =
                   rs3.data.records.location[0].weatherElement[1].time[0].parameter.parameterName;
@@ -179,24 +206,24 @@ const weatherUpdate = () => {
     if (wxData.value[i] !== undefined) {
       switch (true) {
         case wxData.value[i].includes("短暫雨"):
-          wImg.value[i] = "/src/assets/img/rain.png";
+          wImg.value[i] = Imgrain;
           break;
         case wxData.value[i].includes("陰天"):
-          wImg.value[i] = "/src/assets/img/cloudy.png";
+          wImg.value[i] = Imgcloud;
           break;
         case wxData.value[i].includes("晴") &&
           !wxData.value[i].includes("多雲"):
-          wImg.value[i] = "/src/assets/img/sun.png";
+          wImg.value[i] = Imgsun;
           break;
         case wxData.value[i].includes("晴") && wxData.value[i].includes("多雲"):
-          wImg.value[i] = "/src/assets/img/sun-cloud.png";
+          wImg.value[i] = Imgsc;
           break;
         case wxData.value[i].includes("多雲") &&
           !wxData.value[i].includes("晴"):
-          wImg.value[i] = "/src/assets/img/more-cloud.png";
+          wImg.value[i] = Imgmc;
           break;
         case wxData.value[i].includes("豪大雨"):
-          wImg.value[i] = "/src/assets/img/storm.png";
+          wImg.value[i] = Imgstorm;
           break;
         default:
           console.log("Error");
