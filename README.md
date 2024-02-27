@@ -1,4 +1,5 @@
-該專案為個人Vue練習專案(gh-pages:https://aykahshi.github.io/)，網站主要內容如下：
+該專案為個人Vue練習專案，網站主要內容如下：<br>
+gh-pages:https://aykahshi.github.io/
 =====
 * 進入網站時，透過Google Geolocation API獲取使用者位置<br>
 ![image](https://github.com/Aykahshi/Vue-pratice/blob/main/performance/start.jpg)<br>
