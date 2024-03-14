@@ -194,7 +194,6 @@ onMounted(() => {
   $http
     .get("/api/v1/rest/datastore/F-C0032-001", {
       params: {
-        Authorization: "CWA-2977C9FC-E45A-47BA-A5EA-966C0BE1136C",
         locationName: "",
       },
     })
