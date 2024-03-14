@@ -190,13 +190,23 @@ function getWeatherData(local) {
     });
 }
 
-onMounted(async () => {
-  await axios
-    .post("https://openapi.land.moi.gov.tw/WEBAPI/LandQuery/QueryCity", [
-      { CITY: null },
-    ])
-    .then((res) => {
-      locations.value = res.data.RESPONSE.map((e) => e.NAME);
+onMounted(() => {
+  $http
+    .get("/api/v1/rest/datastore/F-C0032-001", {
+      params: {
+        Authorization: "CWA-2977C9FC-E45A-47BA-A5EA-966C0BE1136C",
+        locationName: "",
+      },
+    })
+    .then((rs1) => {
+      console.clear();
+      // 取得API數據並賦予locations陣列
+      locations.value = rs1.data.records.location;
+      console.log(locations);
+    })
+
+    .catch((error) => {
+      console.log(error);
     });
 
   getTime();
