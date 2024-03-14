@@ -198,10 +198,10 @@ onMounted(() => {
       },
     })
     .then((rs1) => {
-      console.clear();
       // 取得API數據並賦予locations陣列
-      locations.value = rs1.data.records.location;
-      console.log(locations);
+      for (let i = 0; i < rs1.data.records.location.length; i++) {
+        locations.value[i] = rs1.data.records.location[i].locationName;
+      }
     })
 
     .catch((error) => {
