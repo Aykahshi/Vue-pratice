@@ -154,45 +154,6 @@ const getPosition = () => {
   }
 };
 
-//圖片URLmap;
-// const wImg = new Map([
-//   ["rain", rainImg],
-//   ["cloud", cloudyImg],
-//   ["sun", sunImg],
-//   ["sun-cloud", sunCloudImg],
-//   ["more-cloud", moreCloudImg],
-//   ["storm", stormImg],
-// ]);
-
-// const getWImg = (weather) => {
-//   // let wImgURL;
-//   // if (weather !== undefined) {
-//   //   switch (true) {
-//   //     case weather.includes("短暫雨"):
-//   //       wImgURL = "rain";
-//   //       break;
-//   //     case weather.includes("陰天"):
-//   //       wImgURL = "cloud";
-//   //       break;
-//   //     case weather.includes("晴") && !weather.includes("多雲"):
-//   //       wImgURL = "sun";
-//   //       break;
-//   //     case weather.includes("晴") && weather.includes("多雲"):
-//   //       wImgURL = "sun-cloud";
-//   //       break;
-//   //     case weather.includes("多雲") && !weather.includes("晴"):
-//   //       wImgURL = "more-cloud";
-//   //       break;
-//   //     case weather.includes("豪大雨"):
-//   //       wImgURL = "storm";
-//   //       break;
-//   //     default:
-//   //       console.log("Error");
-//   //   }
-//   // }
-//   return wImg.get(weather);
-// };
-
 //圖片判斷規則
 let isRainy = false;
 let isCloudy = false;
