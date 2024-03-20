@@ -30,7 +30,7 @@
     </div>
     <div class="present">
       <div class="contentL">
-        <span class="country">{{ city }}實時氣象</span>
+        <span class="country">{{ city }}<br />實時氣象</span>
         <span class="chance">降雨機率：{{ rainchance }}％</span>
         <span class="tp1">{{ temperature }}°C</span>
       </div>
@@ -40,50 +40,77 @@
         <span class="time">{{ time }}</span>
       </div>
       <div class="imgandtp">
-        <img class="wImg" :src="wImg[0]" arc="" />
+        <img v-if="isRainy" :src="rainImg" arc="" />
+        <img v-else-if="isCloudy" :src="cloudyImg" arc="" />
+        <img v-else-if="isSunny" :src="sunImg" arc="" />
+        <img v-else-if="isSunC" :src="sunCloudImg" arc="" />
+        <img v-else-if="isMcloudy" :src="moreCloudImg" arc="" />
+        <img v-else :src="stormImg" arc="" />
         <div class="tp2">{{ temperature }}°C</div>
       </div>
     </div>
     <div class="main">
-      <div class="weather" v-for="(data, index) in wxData" :key="index">
-        <span>
-          {{ moment(new Date(data.startTime)).format("MM/DD HH:mm") }}
-        </span>
-        <span>~</span>
-        <span>
-          {{ moment(new Date(data.endTime)).format("MM/DD HH:mm") }}
-        </span>
-        <span>{{ data.parameter.parameterName }} </span>
-        <img class="wImg" :src="wImg[index]" arc="" />
-      </div>
+      <weather-card
+        v-for="(data, index) in wxData"
+        :key="index"
+        :startTime="data.startTime"
+        :endTime="data.endTime"
+        :weatherInfo="data.parameter.parameterName"
+        :imgURL="imgURL[index]"
+      />
     </div>
   </section>
 </template>
 
 <script setup>
-// 透過axios進行API串接並獲取所需的資料;
+//引入moment.js插件
 import moment from "moment";
-import axios from "axios";
 
+// 引入設置好的API串接並獲取所需的資料;
 import $http from "@/API/http";
 import $google from "@/API/google";
 
-import Imgrain from "@/assets/img/rain.png";
-import Imgcloud from "@/assets/img/cloudy.png";
-import Imgsun from "@/assets/img/sun.png";
-import Imgsc from "@/assets/img/sun-cloud.png";
-import Imgmc from "@/assets/img/more-cloud.png";
-import Imgstorm from "@/assets/img/storm.png";
+import weatherCard from "@/components/weather-card.vue";
+
+//預先引入圖片
+import rainImg from "../assets/img/rain.png";
+import cloudyImg from "../assets/img/cloudy.png";
+import sunImg from "../assets/img/sun.png";
+import sunCloudImg from "../assets/img/sun-cloud.png";
+import moreCloudImg from "../assets/img/more-cloud.png";
+import stormImg from "../assets/img//storm.png";
 
 const wxData = ref([]);
 const rainchance = ref("0");
 const temperature = ref("0");
 const city = ref("當前");
 const selectedCity = ref(null); //默認選擇為null
-const locations = ref([]);
-const wImg = ref(["", "", ""]);
-const date = ref("2000-01-01");
-const time = ref("00:00:00");
+const locations = ref([
+  "嘉義縣",
+  "新北市",
+  "嘉義市",
+  "新竹縣",
+  "新竹市",
+  "臺北市",
+  "臺南市",
+  "宜蘭縣",
+  "苗栗縣",
+  "雲林縣",
+  "花蓮縣",
+  "臺中市",
+  "臺東縣",
+  "桃園市",
+  "南投縣",
+  "高雄市",
+  "金門縣",
+  "屏東縣",
+  "基隆市",
+  "澎湖縣",
+  "彰化縣",
+  "連江縣",
+]);
+const date = ref("");
+const time = ref("");
 
 //獲取當前時間與日期
 const getTime = () => {
@@ -127,6 +154,54 @@ const getPosition = () => {
   }
 };
 
+//圖片URLmap;
+// const wImg = new Map([
+//   ["rain", rainImg],
+//   ["cloud", cloudyImg],
+//   ["sun", sunImg],
+//   ["sun-cloud", sunCloudImg],
+//   ["more-cloud", moreCloudImg],
+//   ["storm", stormImg],
+// ]);
+
+// const getWImg = (weather) => {
+//   // let wImgURL;
+//   // if (weather !== undefined) {
+//   //   switch (true) {
+//   //     case weather.includes("短暫雨"):
+//   //       wImgURL = "rain";
+//   //       break;
+//   //     case weather.includes("陰天"):
+//   //       wImgURL = "cloud";
+//   //       break;
+//   //     case weather.includes("晴") && !weather.includes("多雲"):
+//   //       wImgURL = "sun";
+//   //       break;
+//   //     case weather.includes("晴") && weather.includes("多雲"):
+//   //       wImgURL = "sun-cloud";
+//   //       break;
+//   //     case weather.includes("多雲") && !weather.includes("晴"):
+//   //       wImgURL = "more-cloud";
+//   //       break;
+//   //     case weather.includes("豪大雨"):
+//   //       wImgURL = "storm";
+//   //       break;
+//   //     default:
+//   //       console.log("Error");
+//   //   }
+//   // }
+//   return wImg.get(weather);
+// };
+
+//圖片判斷規則
+let isRainy = false;
+let isCloudy = false;
+let isSunny = false;
+let isSunC = false;
+let isMcloudy = false;
+
+const imgURL = ref(["", "", ""]);
+
 //圖片變更事件
 const weatherUpdate = () => {
   for (let i = 0; i < 3; i++) {
@@ -134,22 +209,24 @@ const weatherUpdate = () => {
     if (data !== undefined) {
       switch (true) {
         case data.includes("短暫雨"):
-          wImg.value[i] = Imgrain;
+          isRainy = true;
+          imgURL.value[i] = rainImg;
           break;
         case data.includes("陰天"):
-          wImg.value[i] = Imgcloud;
+          isCloudy = true;
+          imgURL.value[i] = cloudyImg;
           break;
         case data.includes("晴") && !data.includes("多雲"):
-          wImg.value[i] = Imgsun;
+          isSunny = true;
+          imgURL.value[i] = sunImg;
           break;
         case data.includes("晴") && data.includes("多雲"):
-          wImg.value[i] = Imgsc;
+          isSunC = true;
+          imgURL.value[i] = sunCloudImg;
           break;
         case data.includes("多雲") && !data.includes("晴"):
-          wImg.value[i] = Imgmc;
-          break;
-        case data.includes("豪大雨"):
-          wImg.value[i] = Imgstorm;
+          isMcloudy = true;
+          imgURL.value[i] = moreCloudImg;
           break;
         default:
           console.log("Error");
@@ -191,23 +268,6 @@ function getWeatherData(local) {
 }
 
 onMounted(() => {
-  $http
-    .get("/api/v1/rest/datastore/F-C0032-001", {
-      params: {
-        locationName: "",
-      },
-    })
-    .then((rs1) => {
-      // 取得API數據並賦予locations陣列
-      for (let i = 0; i < rs1.data.records.location.length; i++) {
-        locations.value[i] = rs1.data.records.location[i].locationName;
-      }
-    })
-
-    .catch((error) => {
-      console.log(error);
-    });
-
   getTime();
   getPosition();
 });
