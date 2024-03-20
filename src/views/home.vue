@@ -161,11 +161,20 @@ let isSunny = false;
 let isSunC = false;
 let isMcloudy = false;
 
+const imgReset = () => {
+  isRainy = false;
+  isCloudy = false;
+  isSunny = false;
+  isSunC = false;
+  isMcloudy = false;
+};
+
 const imgURL = ref(["", "", ""]);
 
 //圖片變更事件
 const weatherUpdate = () => {
   for (let i = 0; i < 3; i++) {
+    imgReset();
     const data = wxData.value[i].parameter.parameterName;
     if (data !== undefined) {
       switch (true) {
@@ -200,6 +209,7 @@ const weatherUpdate = () => {
 const reset = () => {
   selectedCity.value = null;
   getPosition();
+  imgReset();
 };
 
 function getWeatherData(local) {
