@@ -40,11 +40,11 @@
         <span class="time">{{ time }}</span>
       </div>
       <div class="imgandtp">
-        <img v-if="isRainy" :src="rainImg" arc="" />
-        <img v-else-if="isCloudy" :src="cloudyImg" arc="" />
-        <img v-else-if="isSunny" :src="sunImg" arc="" />
-        <img v-else-if="isSunC" :src="sunCloudImg" arc="" />
-        <img v-else-if="isMcloudy" :src="moreCloudImg" arc="" />
+        <img v-if="fRainy" :src="rainImg" arc="" />
+        <img v-else-if="fCloudy" :src="cloudyImg" arc="" />
+        <img v-else-if="fSunny" :src="sunImg" arc="" />
+        <img v-else-if="fSunC" :src="sunCloudImg" arc="" />
+        <img v-else-if="fMcloudy" :src="moreCloudImg" arc="" />
         <img v-else :src="stormImg" arc="" />
         <div class="tp2">{{ temperature }}°C</div>
       </div>
@@ -161,6 +161,13 @@ let isSunny = false;
 let isSunC = false;
 let isMcloudy = false;
 
+//第一次迴圈變數
+let fRainy = false;
+let fCloudy = false;
+let fSunny = false;
+let fSunC = false;
+let fMcloudy = false;
+
 const imgReset = () => {
   isRainy = false;
   isCloudy = false;
@@ -201,6 +208,14 @@ const weatherUpdate = () => {
         default:
           console.log("Error");
       }
+    }
+
+    if (i === 0) {
+      fRainy = isRainy;
+      fCloudy = isCloudy;
+      fSunny = isSunny;
+      fSunC = isSunC;
+      fMcloudy = isMcloudy;
     }
   }
 };
