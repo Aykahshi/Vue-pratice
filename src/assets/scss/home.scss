@@ -241,7 +241,7 @@ section {
 }
 
 //website RWD
-@media screen and (1000px < width <=1600px) {
+@media screen and (max-width:1600px) {
 
 	header {
 		height: 7vh;
@@ -357,7 +357,7 @@ section {
 }
 
 //iPad size RWD
-@media screen and (600px < width <=1000px) {
+@media screen and (max-width:1024px) {
 
 	header {
 		height: 7vh;
@@ -477,7 +477,7 @@ section {
 
 
 	//Phone size RWD
-	@media screen and (width <=600px) {
+	@media screen and (max-width:600px) {
 
 		header {
 			display: none;
@@ -571,7 +571,11 @@ section {
 					&>.country {
 						font-size: 24px;
 						font-weight: 500;
-						line-height: 5px;
+						line-height: 25px;
+
+						br {
+							display: none;
+						}
 					}
 
 					&>.chance {
@@ -637,7 +641,44 @@ section {
 				height: auto;
 				flex-direction: column;
 				justify-content: start;
-				background-color: #0b131e;
+				background-color: #202b3b;
+
+				.weather {
+					flex-wrap: wrap;
+					align-content: center;
+
+					img {
+						width: auto;
+						height: auto;
+					}
+
+					span {
+						width: 100%;
+					}
+
+					&:nth-child(2) {
+
+						&::after,
+						&::before {
+							content: "";
+							display: block;
+							position: absolute;
+							width: 80%;
+							height: 1px;
+							left: 10%;
+							right: 0;
+
+						}
+
+						&::after {
+							top: 34%;
+						}
+
+						&::before {
+							bottom: 34%;
+						}
+					}
+				}
 			}
 		}
 	}
